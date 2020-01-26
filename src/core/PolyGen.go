@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const VERT_PRECISION = 10000
+const VERT_DECIMAL_PRECISION = 10000
 
 //const SPACIAL_INDEX_PRECISION = 10000
 
@@ -32,29 +32,30 @@ Use the right precision here based on bounds
 */
 type qvertint int64
 
-const QVERT_INT_MAX = 9223372036854775807
+const QVERT_INT_MAX = math.MaxInt64
 
 // Used as keys for maps
 type QuantizedQvec3 struct {
-	x qvertint
-	y qvertint
-	z qvertint
+	X qvertint
+	Y qvertint
+	Z qvertint
 }
 
 // Critical method for performance
 // Check implementation and standard approaches
 func (v *Qvec3) Gen3DSpacialIndexKey() QuantizedQvec3 {
 	// TODO : Check
-	if math.Abs(math.Round(float64(v.X))) > QVERT_INT_MAX ||
-		math.Abs(math.Round(float64(v.Y))) > QVERT_INT_MAX ||
-		math.Abs(math.Round(float64(v.Z))) > QVERT_INT_MAX {
+	vx := math.Round(float64(v.X * VERT_DECIMAL_PRECISION))
+	vy := math.Round(float64(v.Y * VERT_DECIMAL_PRECISION))
+	vz := math.Round(float64(v.Z * VERT_DECIMAL_PRECISION))
+	fmt.Println(vx, QVERT_INT_MAX, math.Abs(vx) > QVERT_INT_MAX)
+	if math.Abs(vx) > QVERT_INT_MAX ||
+		math.Abs(vy) > QVERT_INT_MAX ||
+		math.Abs(vz) > QVERT_INT_MAX {
 		panic("Vert position value exceeded limits for gen3DSpacialIndexKey for " + fmt.Sprint(v))
 	}
-	return QuantizedQvec3{
-		qvertint(math.Round(float64(v.X * VERT_PRECISION))),
-		qvertint(math.Round(float64(v.Y * VERT_PRECISION))),
-		qvertint(math.Round(float64(v.Z * VERT_PRECISION))),
-	}
+
+	return QuantizedQvec3{qvertint(vx), qvertint(vy), qvertint(vz)}
 }
 
 type QuadFace struct {
